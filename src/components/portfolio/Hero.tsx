@@ -1,6 +1,8 @@
 import profile from "@/assets/profile.jpg";
+import { useCV } from "@/lib/projects";
 
 export function Hero() {
+  const cv = useCV();
   return (
     <section className="relative pt-36 pb-24 md:pt-44 md:pb-32 overflow-hidden bg-hero">
       <div className="absolute inset-0 -z-10 opacity-[0.04] [background-image:linear-gradient(var(--color-foreground)_1px,transparent_1px),linear-gradient(90deg,var(--color-foreground)_1px,transparent_1px)] [background-size:60px_60px]" />
@@ -25,6 +27,15 @@ export function Hero() {
             >
               View projects
             </a>
+            {cv && (
+              <a
+                href={cv.dataUrl}
+                download={cv.name}
+                className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
+              >
+                Download CV
+              </a>
+            )}
             <a
               href="#contact"
               className="px-6 py-3 rounded-full border border-border text-foreground hover:bg-secondary transition-colors"
