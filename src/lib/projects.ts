@@ -11,6 +11,7 @@ export type Project = {
 };
 
 const KEY = "yassa.portfolio.projects.v1";
+const CV_KEY = "yassa.portfolio.cv.v1";
 
 const seed: Project[] = [
   {
@@ -127,5 +128,74 @@ export function useProjects() {
       localStorage.removeItem(KEY);
       window.dispatchEvent(new CustomEvent("projects:changed"));
     },
+    replaceAll(items: Project[]) {
+      write(items);
+    },
   };
+}
+
+export function exportProjectsJSON(): string {
+  return JSON.stringify(
+    typeof window === "undefined"
+      ? seed
+      : (() => {
+          try {
+            const raw = localStorage.getItem(KEY);
+            return raw ? JSON.parse(raw) : seed;
+          } catch {
+            return seed;
+          }
+        })(),
+    null,
+    2,
+  );
+}
+
+export function importProjectsJSON(json: string): Project[] {
+  const parsed = JSON.parse(json);
+  if (!Array.isArray(parsed)) throw new Error("Invalid file: expected an array of projects");
+  const cleaned: Project[] = parsed.map((p: any) => ({
+    id: typeof p.id === "string" ? p.id : crypto.randomUUID(),
+    title: String(p.title ?? ""),
+    category: String(p.category ?? ""),
+    description: String(p.description ?? ""),
+    tech: Array.isArray(p.tech) ? p.tech.map(String) : [],
+    link: p.link ? String(p.link) : undefined,
+    metric: p.metric ? String(p.metric) : undefined,
+  }));
+  localStorage.setItem(KEY, JSON.stringify(cleaned));
+  window.dispatchEvent(new CustomEvent("projects:changed"));
+  return cleaned;
+}
+
+export function getCV(): { name: string; dataUrl: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CV_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function setCV(cv: { name: string; dataUrl: string } | null) {
+  if (typeof window === "undefined") return;
+  if (cv) localStorage.setItem(CV_KEY, JSON.stringify(cv));
+  else localStorage.removeItem(CV_KEY);
+  window.dispatchEvent(new CustomEvent("cv:changed"));
+}
+
+export function useCV() {
+  const [cv, setCvState] = useState<{ name: string; dataUrl: string } | null>(null);
+  useEffect(() => {
+    setCvState(getCV());
+    const onChange = () => setCvState(getCV());
+    window.addEventListener("cv:changed", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("cv:changed", onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
+  return cv;
 }
