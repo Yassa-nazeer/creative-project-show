@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # ملاحظة: إذا فشل بناء dist جرب '.output/public'
-          path: './dist' 
+          path: './.output/public' 
 
       - name: Deploy to GitHub Pages
         id: deployment
